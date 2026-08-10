@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import authRoutes from './routes/auth.routes';
 import customerRoutes from './routes/customer.routes';
 import productRoutes from './routes/product.routes';
+import challanRoutes from './routes/challan.routes';
 
 dotenv.config();
 
@@ -22,6 +23,7 @@ app.get('/health', (_req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/customers', customerRoutes);
 app.use('/api/products', productRoutes);
+app.use('/api/challans', challanRoutes);
 
 // Global error handler
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
