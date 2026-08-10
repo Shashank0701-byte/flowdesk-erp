@@ -45,6 +45,14 @@ async function generateChallanNumber(tx: Prisma.TransactionClient): Promise<stri
 // ─── Shared helper: fetch + validate products for item list ───────────────────
 
 async function resolveProducts(productIds: string[]) {
+  // Guard: duplicate product IDs in one challan would create two line items
+  // for the same product — almost always a client mistake.
+  const seen = new Set<string>();
+  const duplicates = productIds.filter((id) => (seen.has(id) ? true : !seen.add(id)));
+  if (duplicates.length > 0) {
+    return { error: `Duplicate product IDs in items: ${[...new Set(duplicates)].join(', ')}`, products: null };
+  }
+
   const products = await prisma.product.findMany({ where: { id: { in: productIds } } });
   if (products.length !== productIds.length) {
     const missing = productIds.filter((id) => !products.find((p) => p.id === id));

@@ -1,0 +1,410 @@
+{
+  "info": {
+    "name": "ERP CRM API",
+    "description": "Mini ERP + CRM — Auth, Customers, Products, Stock, Challans",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000", "type": "string" },
+    { "key": "token", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.token) pm.collectionVariables.set('token', res.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@erp.com\",\n  \"password\": \"admin123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login (Sales)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.token) pm.collectionVariables.set('token', res.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"sales@erp.com\",\n  \"password\": \"sales123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login (Warehouse)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"warehouse@erp.com\",\n  \"password\": \"warehouse123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login (Accounts)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"accounts@erp.com\",\n  \"password\": \"accounts123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/register",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"New User\",\n  \"email\": \"newuser@erp.com\",\n  \"password\": \"password123\",\n  \"role\": \"Sales\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Current User (me)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/auth/me",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Customers",
+      "item": [
+        {
+          "name": "List Customers",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/customers?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "customers"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" },
+                { "key": "q", "value": "", "disabled": true },
+                { "key": "status", "value": "Active", "disabled": true },
+                { "key": "type", "value": "Wholesale", "disabled": true }
+              ]
+            },
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Get Customer",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/customers/:id",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "variable": [{ "key": "id", "value": "<customer_id>" }]
+          }
+        },
+        {
+          "name": "Create Customer",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/customers",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Rajesh Kumar\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rajesh@example.com\",\n  \"businessName\": \"Kumar Enterprises\",\n  \"gstNumber\": \"29ABCDE1234F1Z5\",\n  \"type\": \"Wholesale\",\n  \"status\": \"Active\",\n  \"address\": \"45 Industrial Area, Delhi\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Customer",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api/customers/:id",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Active\",\n  \"followUpDate\": \"2026-09-01T00:00:00.000Z\"\n}"
+            },
+            "variable": [{ "key": "id", "value": "<customer_id>" }]
+          }
+        },
+        {
+          "name": "Delete Customer",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/customers/:id",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "variable": [{ "key": "id", "value": "<customer_id>" }]
+          }
+        },
+        {
+          "name": "Add Note",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/customers/:id/notes",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"note\": \"Called to discuss Q3 order requirements\"\n}"
+            },
+            "variable": [{ "key": "id", "value": "<customer_id>" }]
+          }
+        },
+        {
+          "name": "List Notes",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/customers/:id/notes",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "variable": [{ "key": "id", "value": "<customer_id>" }]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Products",
+      "item": [
+        {
+          "name": "List Products",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/products?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "products"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" },
+                { "key": "q", "value": "", "disabled": true },
+                { "key": "category", "value": "", "disabled": true },
+                { "key": "lowStock", "value": "true", "disabled": true }
+              ]
+            },
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Get Product",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/products/:id",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "variable": [{ "key": "id", "value": "<product_id>" }]
+          }
+        },
+        {
+          "name": "Create Product",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/products",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Steel Bolt M10\",\n  \"sku\": \"BOLT-M10-001\",\n  \"category\": \"Fasteners\",\n  \"unitPrice\": 6.00,\n  \"currentStock\": 100,\n  \"minStockAlert\": 20,\n  \"location\": \"Rack B2\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Product",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api/products/:id",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Steel Bolt M10 (Zinc Plated)\",\n  \"unitPrice\": 6.50,\n  \"minStockAlert\": 25\n}"
+            },
+            "variable": [{ "key": "id", "value": "<product_id>" }]
+          }
+        },
+        {
+          "name": "Adjust Stock (IN)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/products/:id/stock",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"IN\",\n  \"quantity\": 50,\n  \"reason\": \"Purchase order PO-2026-001 received\"\n}"
+            },
+            "variable": [{ "key": "id", "value": "<product_id>" }]
+          }
+        },
+        {
+          "name": "Adjust Stock (OUT)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/products/:id/stock",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"OUT\",\n  \"quantity\": 5,\n  \"reason\": \"Damaged goods disposal\"\n}"
+            },
+            "variable": [{ "key": "id", "value": "<product_id>" }]
+          }
+        },
+        {
+          "name": "Stock Movement History",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/products/:id/stock?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "products", ":id", "stock"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" }
+              ]
+            },
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "variable": [{ "key": "id", "value": "<product_id>" }]
+          }
+        },
+        {
+          "name": "Delete Product",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/products/:id",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "variable": [{ "key": "id", "value": "<product_id>" }]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Challans",
+      "item": [
+        {
+          "name": "List Challans",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/challans?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "challans"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" },
+                { "key": "status", "value": "Draft", "disabled": true },
+                { "key": "customerId", "value": "", "disabled": true },
+                { "key": "q", "value": "CH-2026", "disabled": true }
+              ]
+            },
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Get Challan",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/challans/:id",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "variable": [{ "key": "id", "value": "<challan_id>" }]
+          }
+        },
+        {
+          "name": "Create Draft Challan",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/challans",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": \"<customer_id>\",\n  \"items\": [\n    { \"productId\": \"<product_id_1>\", \"quantity\": 10 },\n    { \"productId\": \"<product_id_2>\", \"quantity\": 5 }\n  ]\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Draft Challan",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api/challans/:id",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    { \"productId\": \"<product_id_1>\", \"quantity\": 15 },\n    { \"productId\": \"<product_id_2>\", \"quantity\": 8 }\n  ]\n}"
+            },
+            "variable": [{ "key": "id", "value": "<challan_id>" }]
+          }
+        },
+        {
+          "name": "Confirm Challan",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/challans/:id/confirm",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "variable": [{ "key": "id", "value": "<challan_id>" }]
+          }
+        },
+        {
+          "name": "Cancel Challan",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/challans/:id/cancel",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "variable": [{ "key": "id", "value": "<challan_id>" }]
+          }
+        }
+      ]
+    }
+  ]
+}
