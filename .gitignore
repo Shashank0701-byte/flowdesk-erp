@@ -30,3 +30,6 @@ backend/prisma/migrations/*.sql.tmp
 # Personal prep notes (not for repo)
 decision.md
 flow.md
+
+# AI-generated specs, plans, design docs
+docs/superpowers/
