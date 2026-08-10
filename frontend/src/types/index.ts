@@ -2,7 +2,7 @@
 
 export type Role = 'Admin' | 'Sales' | 'Warehouse' | 'Accounts';
 export type CustomerType = 'Retail' | 'Wholesale' | 'Distributor';
-export type CustomerStatus = 'Active' | 'Inactive';
+export type CustomerStatus = 'Lead' | 'Active' | 'Inactive';
 export type ChallanStatus = 'Draft' | 'Confirmed' | 'Cancelled';
 export type StockMovementType = 'IN' | 'OUT';
 

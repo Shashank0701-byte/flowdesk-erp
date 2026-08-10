@@ -99,7 +99,7 @@ export async function listChallans(req: Request, res: Response): Promise<void> {
 
 export async function getChallan(req: Request, res: Response): Promise<void> {
   const challan = await prisma.challan.findUnique({
-    where: { id: req.params.id },
+    where: { id: (req.params.id as string) },
     include: {
       customer: true,
       createdBy: { select: { id: true, name: true, role: true } },
@@ -183,7 +183,7 @@ export async function updateChallan(req: Request, res: Response): Promise<void> 
     return;
   }
 
-  const existing = await prisma.challan.findUnique({ where: { id: req.params.id } });
+  const existing = await prisma.challan.findUnique({ where: { id: (req.params.id as string) } });
   if (!existing) {
     res.status(404).json({ error: 'Challan not found' });
     return;
@@ -214,10 +214,10 @@ export async function updateChallan(req: Request, res: Response): Promise<void> 
 
   const challan = await prisma.$transaction(async (tx) => {
     // Replace all items atomically with fresh snapshots
-    await tx.challanItem.deleteMany({ where: { challanId: req.params.id } });
+    await tx.challanItem.deleteMany({ where: { challanId: (req.params.id as string) } });
 
     return tx.challan.update({
-      where: { id: req.params.id },
+      where: { id: (req.params.id as string) },
       data: {
         ...(customerId && { customerId }),
         totalQuantity,
@@ -253,7 +253,7 @@ export async function confirmChallan(req: Request, res: Response): Promise<void>
 
   const txResult: TxResult = await prisma.$transaction(async (tx) => {
     const challan = await tx.challan.findUnique({
-      where: { id: req.params.id },
+      where: { id: (req.params.id as string) },
       include: { items: true },
     });
 
@@ -316,7 +316,7 @@ export async function confirmChallan(req: Request, res: Response): Promise<void>
 
     // ── Step 3: Mark Confirmed ─────────────────────────────────────────────
     const confirmed = await tx.challan.update({
-      where: { id: req.params.id },
+      where: { id: (req.params.id as string) },
       data: { status: ChallanStatus.Confirmed },
       include: {
         items: true,
@@ -336,7 +336,7 @@ export async function confirmChallan(req: Request, res: Response): Promise<void>
 }
 
 export async function cancelChallan(req: Request, res: Response): Promise<void> {
-  const challan = await prisma.challan.findUnique({ where: { id: req.params.id } });
+  const challan = await prisma.challan.findUnique({ where: { id: (req.params.id as string) } });
 
   if (!challan) {
     res.status(404).json({ error: 'Challan not found' });
@@ -349,7 +349,7 @@ export async function cancelChallan(req: Request, res: Response): Promise<void> 
   }
 
   const updated = await prisma.challan.update({
-    where: { id: req.params.id },
+    where: { id: (req.params.id as string) },
     data: { status: ChallanStatus.Cancelled },
     select: { id: true, challanNumber: true, status: true },
   });

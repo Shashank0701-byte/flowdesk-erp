@@ -85,7 +85,7 @@ export async function listCustomers(req: Request, res: Response): Promise<void> 
 
 export async function getCustomer(req: Request, res: Response): Promise<void> {
   const customer = await prisma.customer.findUnique({
-    where: { id: req.params.id },
+    where: { id: (req.params.id as string) },
     include: {
       notes: {
         orderBy: { createdAt: 'desc' },
@@ -130,7 +130,7 @@ export async function updateCustomer(req: Request, res: Response): Promise<void>
     return;
   }
 
-  const existing = await prisma.customer.findUnique({ where: { id: req.params.id } });
+  const existing = await prisma.customer.findUnique({ where: { id: (req.params.id as string) } });
   if (!existing) {
     res.status(404).json({ error: 'Customer not found' });
     return;
@@ -139,7 +139,7 @@ export async function updateCustomer(req: Request, res: Response): Promise<void>
   const { followUpDate, email, ...rest } = result.data;
 
   const customer = await prisma.customer.update({
-    where: { id: req.params.id },
+    where: { id: (req.params.id as string) },
     data: {
       ...rest,
       ...(email !== undefined && { email: email || null }),
@@ -153,14 +153,14 @@ export async function updateCustomer(req: Request, res: Response): Promise<void>
 }
 
 export async function deleteCustomer(req: Request, res: Response): Promise<void> {
-  const existing = await prisma.customer.findUnique({ where: { id: req.params.id } });
+  const existing = await prisma.customer.findUnique({ where: { id: (req.params.id as string) } });
   if (!existing) {
     res.status(404).json({ error: 'Customer not found' });
     return;
   }
 
   // Block delete if customer has challans
-  const challanCount = await prisma.challan.count({ where: { customerId: req.params.id } });
+  const challanCount = await prisma.challan.count({ where: { customerId: (req.params.id as string) } });
   if (challanCount > 0) {
     res.status(409).json({
       error: `Cannot delete customer with ${challanCount} associated challan(s)`,
@@ -168,7 +168,7 @@ export async function deleteCustomer(req: Request, res: Response): Promise<void>
     return;
   }
 
-  await prisma.customer.delete({ where: { id: req.params.id } });
+  await prisma.customer.delete({ where: { id: (req.params.id as string) } });
   res.status(204).send();
 }
 
@@ -179,7 +179,7 @@ export async function addNote(req: Request, res: Response): Promise<void> {
     return;
   }
 
-  const customer = await prisma.customer.findUnique({ where: { id: req.params.id } });
+  const customer = await prisma.customer.findUnique({ where: { id: (req.params.id as string) } });
   if (!customer) {
     res.status(404).json({ error: 'Customer not found' });
     return;
@@ -187,7 +187,7 @@ export async function addNote(req: Request, res: Response): Promise<void> {
 
   const note = await prisma.customerNote.create({
     data: {
-      customerId: req.params.id,
+      customerId: (req.params.id as string),
       userId: req.user!.userId,
       note: result.data.note,
     },
@@ -198,14 +198,14 @@ export async function addNote(req: Request, res: Response): Promise<void> {
 }
 
 export async function listNotes(req: Request, res: Response): Promise<void> {
-  const customer = await prisma.customer.findUnique({ where: { id: req.params.id } });
+  const customer = await prisma.customer.findUnique({ where: { id: (req.params.id as string) } });
   if (!customer) {
     res.status(404).json({ error: 'Customer not found' });
     return;
   }
 
   const notes = await prisma.customerNote.findMany({
-    where: { customerId: req.params.id },
+    where: { customerId: (req.params.id as string) },
     orderBy: { createdAt: 'desc' },
     include: { user: { select: { id: true, name: true, role: true } } },
   });

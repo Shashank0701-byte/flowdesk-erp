@@ -22,7 +22,7 @@ export default function CustomerForm({ customer, onSuccess, onCancel }: Props) {
     businessName: customer?.businessName ?? '',
     gstNumber: customer?.gstNumber ?? '',
     type: customer?.type ?? 'Retail',
-    status: customer?.status ?? 'Active',
+    status: customer?.status ?? 'Lead',
     address: customer?.address ?? '',
   });
 
@@ -56,6 +56,7 @@ export default function CustomerForm({ customer, onSuccess, onCancel }: Props) {
           <option value="Distributor">Distributor</option>
         </Select>
         <Select label="Status" value={form.status} onChange={set('status')}>
+          <option value="Lead">Lead</option>
           <option value="Active">Active</option>
           <option value="Inactive">Inactive</option>
         </Select>

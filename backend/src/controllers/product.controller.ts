@@ -105,7 +105,7 @@ export async function listProducts(req: Request, res: Response): Promise<void> {
 
 export async function getProduct(req: Request, res: Response): Promise<void> {
   const product = await prisma.product.findUnique({
-    where: { id: req.params.id },
+    where: { id: (req.params.id as string) },
     include: {
       _count: { select: { stockMovements: true, challanItems: true } },
     },
@@ -163,14 +163,14 @@ export async function updateProduct(req: Request, res: Response): Promise<void> 
     return;
   }
 
-  const existing = await prisma.product.findUnique({ where: { id: req.params.id } });
+  const existing = await prisma.product.findUnique({ where: { id: (req.params.id as string) } });
   if (!existing) {
     res.status(404).json({ error: 'Product not found' });
     return;
   }
 
   const product = await prisma.product.update({
-    where: { id: req.params.id },
+    where: { id: (req.params.id as string) },
     data: result.data,
   });
 
@@ -178,13 +178,13 @@ export async function updateProduct(req: Request, res: Response): Promise<void> 
 }
 
 export async function deleteProduct(req: Request, res: Response): Promise<void> {
-  const existing = await prisma.product.findUnique({ where: { id: req.params.id } });
+  const existing = await prisma.product.findUnique({ where: { id: (req.params.id as string) } });
   if (!existing) {
     res.status(404).json({ error: 'Product not found' });
     return;
   }
 
-  const challanCount = await prisma.challanItem.count({ where: { productId: req.params.id } });
+  const challanCount = await prisma.challanItem.count({ where: { productId: (req.params.id as string) } });
   if (challanCount > 0) {
     res.status(409).json({
       error: `Cannot delete product referenced in ${challanCount} challan item(s)`,
@@ -192,7 +192,7 @@ export async function deleteProduct(req: Request, res: Response): Promise<void> 
     return;
   }
 
-  await prisma.product.delete({ where: { id: req.params.id } });
+  await prisma.product.delete({ where: { id: (req.params.id as string) } });
   res.status(204).send();
 }
 
@@ -212,7 +212,7 @@ export async function adjustStock(req: Request, res: Response): Promise<void> {
     | { ok: false; status: 404 | 422; error: string };
 
   const txResult: TxResult = await prisma.$transaction(async (tx) => {
-    const product = await tx.product.findUnique({ where: { id: req.params.id } });
+    const product = await tx.product.findUnique({ where: { id: (req.params.id as string) } });
 
     if (!product) return { ok: false, status: 404 as const, error: 'Product not found' };
 
@@ -230,10 +230,10 @@ export async function adjustStock(req: Request, res: Response): Promise<void> {
         : product.currentStock - quantity;
 
     const [updatedProduct] = await Promise.all([
-      tx.product.update({ where: { id: req.params.id }, data: { currentStock: newStock } }),
+      tx.product.update({ where: { id: (req.params.id as string) }, data: { currentStock: newStock } }),
       tx.stockMovement.create({
         data: {
-          productId: req.params.id,
+          productId: (req.params.id as string),
           quantityChanged: quantity,
           type,
           reason,
@@ -263,7 +263,7 @@ export async function listStockMovements(req: Request, res: Response): Promise<v
   const { page, limit } = result.data;
   const skip = (page - 1) * limit;
 
-  const product = await prisma.product.findUnique({ where: { id: req.params.id } });
+  const product = await prisma.product.findUnique({ where: { id: (req.params.id as string) } });
   if (!product) {
     res.status(404).json({ error: 'Product not found' });
     return;
@@ -271,13 +271,13 @@ export async function listStockMovements(req: Request, res: Response): Promise<v
 
   const [data, total] = await Promise.all([
     prisma.stockMovement.findMany({
-      where: { productId: req.params.id },
+      where: { productId: (req.params.id as string) },
       orderBy: { createdAt: 'desc' },
       skip,
       take: limit,
       include: { createdBy: { select: { id: true, name: true, role: true } } },
     }),
-    prisma.stockMovement.count({ where: { productId: req.params.id } }),
+    prisma.stockMovement.count({ where: { productId: (req.params.id as string) } }),
   ]);
 
   res.json({ data, meta: { total, page, limit, totalPages: Math.ceil(total / limit) } });

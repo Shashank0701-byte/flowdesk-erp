@@ -75,6 +75,7 @@ export default function CustomersPage() {
           className="w-40"
         >
           <option value="">All statuses</option>
+          <option value="Lead">Lead</option>
           <option value="Active">Active</option>
           <option value="Inactive">Inactive</option>
         </Select>
