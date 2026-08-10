@@ -1,0 +1,144 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  Admin
+  Sales
+  Warehouse
+  Accounts
+}
+
+enum CustomerType {
+  Retail
+  Wholesale
+  Distributor
+}
+
+enum CustomerStatus {
+  Lead
+  Active
+  Inactive
+}
+
+enum ChallanStatus {
+  Draft
+  Confirmed
+  Cancelled
+}
+
+enum StockMovementType {
+  IN
+  OUT
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  challans       Challan[]
+  stockMovements StockMovement[]
+  customerNotes  CustomerNote[]
+}
+
+model Customer {
+  id           String         @id @default(cuid())
+  name         String
+  mobile       String
+  email        String?
+  businessName String?
+  gstNumber    String?
+  type         CustomerType
+  status       CustomerStatus @default(Lead)
+  address      String?
+  followUpDate DateTime?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  challans Challan[]
+  notes    CustomerNote[]
+}
+
+model CustomerNote {
+  id         String   @id @default(cuid())
+  customerId String
+  userId     String
+  note       String
+  createdAt  DateTime @default(now())
+
+  customer Customer @relation(fields: [customerId], references: [id])
+  user     User     @relation(fields: [userId], references: [id])
+}
+
+model Product {
+  id            String   @id @default(cuid())
+  name          String
+  sku           String   @unique
+  category      String
+  unitPrice     Decimal  @db.Decimal(10, 2)
+  currentStock  Int      @default(0)
+  minStockAlert Int      @default(0)
+  location      String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  challanItems   ChallanItem[]
+  stockMovements StockMovement[]
+}
+
+model StockMovement {
+  id              String            @id @default(cuid())
+  productId       String
+  quantityChanged Int
+  type            StockMovementType
+  reason          String
+  createdById     String
+  createdAt       DateTime          @default(now())
+
+  product   Product @relation(fields: [productId], references: [id])
+  createdBy User    @relation(fields: [createdById], references: [id])
+}
+
+model Challan {
+  id            String        @id @default(cuid())
+  challanNumber String        @unique
+  customerId    String
+  status        ChallanStatus @default(Draft)
+  totalQuantity Int           @default(0)
+  createdById   String
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  customer  Customer    @relation(fields: [customerId], references: [id])
+  createdBy User        @relation(fields: [createdById], references: [id])
+  items     ChallanItem[]
+}
+
+model ChallanItem {
+  id                  String  @id @default(cuid())
+  challanId           String
+  productId           String
+  productNameSnapshot String
+  skuSnapshot         String
+  unitPriceSnapshot   Decimal @db.Decimal(10, 2)
+  quantity            Int
+
+  challan Challan @relation(fields: [challanId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+}
+
+// Guards against race conditions in challan number generation
+model ChallanSequence {
+  id        Int @id @default(1)
+  lastValue Int @default(0)
+}
