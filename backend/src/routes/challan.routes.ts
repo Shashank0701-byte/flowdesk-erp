@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { Role } from '@prisma/client';
 import { authenticate } from '../middleware/authenticate';
 import { authorize } from '../middleware/authorize';
+import { asyncHandler } from '../utils/asyncHandler';
 import {
   cancelChallan,
   confirmChallan,
@@ -16,15 +17,15 @@ const router = Router();
 router.use(authenticate);
 
 // List & detail — all roles
-router.get('/', listChallans);
-router.get('/:id', getChallan);
+router.get('/', asyncHandler(listChallans));
+router.get('/:id', asyncHandler(getChallan));
 
 // Create & update Draft — Admin + Sales
-router.post('/', authorize(Role.Admin, Role.Sales), createChallan);
-router.put('/:id', authorize(Role.Admin, Role.Sales), updateChallan);
+router.post('/', authorize(Role.Admin, Role.Sales), asyncHandler(createChallan));
+router.put('/:id', authorize(Role.Admin, Role.Sales), asyncHandler(updateChallan));
 
 // State transitions — Admin + Sales
-router.post('/:id/confirm', authorize(Role.Admin, Role.Sales), confirmChallan);
-router.post('/:id/cancel', authorize(Role.Admin, Role.Sales), cancelChallan);
+router.patch('/:id/confirm', authorize(Role.Admin, Role.Sales), asyncHandler(confirmChallan));
+router.patch('/:id/cancel', authorize(Role.Admin, Role.Sales), asyncHandler(cancelChallan));
 
 export default router;

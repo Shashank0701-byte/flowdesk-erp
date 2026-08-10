@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { Role } from '@prisma/client';
 import { authenticate } from '../middleware/authenticate';
 import { authorize } from '../middleware/authorize';
+import { asyncHandler } from '../utils/asyncHandler';
 import {
   adjustStock,
   createProduct,
@@ -17,18 +18,18 @@ const router = Router();
 router.use(authenticate);
 
 // List & detail — all roles
-router.get('/', listProducts);
-router.get('/:id', getProduct);
-router.get('/:id/stock', listStockMovements);
+router.get('/', asyncHandler(listProducts));
+router.get('/:id', asyncHandler(getProduct));
+router.get('/:id/stock', asyncHandler(listStockMovements));
 
 // Create & update — Admin + Warehouse
-router.post('/', authorize(Role.Admin, Role.Warehouse), createProduct);
-router.put('/:id', authorize(Role.Admin, Role.Warehouse), updateProduct);
+router.post('/', authorize(Role.Admin, Role.Warehouse), asyncHandler(createProduct));
+router.put('/:id', authorize(Role.Admin, Role.Warehouse), asyncHandler(updateProduct));
 
 // Stock adjustment — Admin + Warehouse
-router.post('/:id/stock', authorize(Role.Admin, Role.Warehouse), adjustStock);
+router.post('/:id/stock', authorize(Role.Admin, Role.Warehouse), asyncHandler(adjustStock));
 
 // Delete — Admin only
-router.delete('/:id', authorize(Role.Admin), deleteProduct);
+router.delete('/:id', authorize(Role.Admin), asyncHandler(deleteProduct));
 
 export default router;
