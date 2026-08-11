@@ -34,6 +34,36 @@ A full-stack ERP/CRM system with Sales Challan management, inventory tracking, a
 
 ---
 
+## Architecture
+
+```
+┌─────────────────────────────┐
+│     React UI (TypeScript)   │
+│     Vite + Tailwind CSS      │
+└─────────────┬───────────────┘
+              │  Axios / REST API
+              ▼
+┌─────────────────────────────┐
+│    Express Backend           │
+│    Node.js 20 + TypeScript   │
+└──────────┬──────────────────┘
+           │
+     ┌─────┴──────┐
+     ▼            ▼
+┌─────────┐  ┌──────────┐
+│  Prisma │  │  JWT Auth │
+│   ORM   │  │  (HS256) │
+└────┬────┘  └──────────┘
+     │
+     ▼
+┌─────────────────────────────┐
+│     PostgreSQL Database      │
+│  Neon (prod) · Docker (dev) │
+└─────────────────────────────┘
+```
+
+---
+
 ## Local Setup (Docker PostgreSQL)
 
 ### Prerequisites
@@ -313,9 +343,25 @@ Challan status: `Draft → Confirmed | Cancelled`
 
 - Challan cancellation is allowed on both `Draft` and `Confirmed` status. Cancelling a `Confirmed` challan does **not** reverse the stock deduction (documented assumption — reversals would need a separate stock-return flow).
 - No refresh token flow — JWTs last until expiry; re-login required when the token expires.
-- No file uploads (PDF export, product images) — out of scope per assignment spec.
+- No product image uploads — out of scope per assignment spec.
 - Customer `followUpDate` is stored but no scheduled reminder/notification is implemented.
 - Pagination max limit is 100 rows per request (backend enforced via Zod).
+
+---
+
+## Bonus Features
+
+These were not in the assignment spec but added to make the system feel production-ready:
+
+| Feature | Where | Details |
+|---------|-------|---------|
+| **Export challan as PDF** | Challan detail page | "Export PDF" button opens a styled print window; the browser's native Save as PDF produces a clean invoice with line items, totals, and Flowdesk branding |
+| **Customer Lead status** | Customers module | CRM concept — new customers default to `Lead` before any transaction. Separate from `Active` / `Inactive`. Manually promoted by Sales. |
+| **Low-stock dashboard panel** | Dashboard | Highlights products below `minStockAlert` at a glance, color-coded by severity |
+| **Framer Motion transitions** | Throughout UI | Page-level and row-level animations for a polished feel without affecting functionality |
+| **Challan price snapshots** | Challan creation | `productNameSnapshot`, `skuSnapshot`, `unitPriceSnapshot` are stored at creation time — historical challans are unaffected by later price edits |
+| **Stock guard at confirmation** | Challan confirm | Stock is re-checked inside a DB transaction at confirm time, not just at draft creation. Returns `409` if stock is insufficient, rolls back the entire transaction. |
+| **Role-aware UI throughout** | All pages | Buttons, tabs, and actions render based on the logged-in user's role — not just hidden but never rendered for unauthorised roles |
 
 ---
 
@@ -338,3 +384,18 @@ npm run dev          # Vite dev server  →  http://localhost:5173
 npm run build        # production build →  dist/
 npm run preview      # preview production build locally
 ```
+
+---
+
+## Future Improvements
+
+Things I'd build next if this were a real product:
+
+- **Refresh token rotation** — Silent re-auth so users aren't kicked out mid-session. Current JWTs expire and force a manual re-login.
+- **Challan cancellation stock reversal** — Right now cancelling a confirmed challan doesn't return stock. A proper stock-return flow with a separate `StockReturn` entity and audit trail would fix this.
+- **Email / WhatsApp notifications** — Trigger when a challan is confirmed, when stock hits the alert threshold, or when a customer follow-up date is due. Twilio or Resend would be the integration.
+- **Customer follow-up reminders** — The `followUpDate` field exists on every customer but nothing acts on it. A scheduled job (cron or a queue like BullMQ) could surface overdue leads.
+- **Admin invite-only registration** — Currently `/api/auth/register` is open to anyone. In production this should require either an existing admin token or a time-limited invite link.
+- **Product image uploads** — S3 or Cloudflare R2 for storage; display on product cards and in the challan PDF.
+- **Analytics dashboard** — Revenue by period, top customers, top products, stock burn rate — queries Prisma can answer, just need the chart layer (Recharts or Chart.js).
+- **Multi-warehouse support** — Stock tracked per location rather than a single global `currentStock`. The `location` field on Product is already a hint that this was considered.
