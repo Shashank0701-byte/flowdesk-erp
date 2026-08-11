@@ -1,4 +1,4 @@
-# Vertex Club — Mini ERP + CRM
+# Flowdesk — Mini ERP + CRM
 
 A full-stack ERP/CRM system with Sales Challan management, inventory tracking, and customer relationship management.
 
