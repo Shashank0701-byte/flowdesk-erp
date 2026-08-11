@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <!-- Background -->
+  <rect width="32" height="32" rx="7" fill="#0ea5e9"/>
+  <!-- F — left vertical bar -->
+  <rect x="9" y="7" width="4" height="18" fill="white"/>
+  <!-- F — top horizontal bar -->
+  <rect x="9" y="7" width="14" height="4" fill="white"/>
+  <!-- F — middle horizontal bar (slightly shorter, classic F proportion) -->
+  <rect x="9" y="15" width="11" height="3.5" fill="white"/>
+</svg>

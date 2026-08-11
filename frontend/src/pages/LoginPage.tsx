@@ -51,7 +51,7 @@ export default function LoginPage() {
           <div className="h-12 w-12 rounded-2xl bg-sky-500 flex items-center justify-center shadow-lg shadow-sky-200 mb-4">
             <Building2 size={24} className="text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-900">Vertex ERP</h1>
+          <h1 className="text-2xl font-bold text-slate-900">Flowdesk</h1>
           <p className="text-sm text-slate-500 mt-1">Sign in to your account</p>
         </div>
 

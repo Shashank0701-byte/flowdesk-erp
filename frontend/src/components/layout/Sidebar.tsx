@@ -27,7 +27,7 @@ export function Sidebar() {
           <Building2 size={16} className="text-white" />
         </div>
         <div>
-          <p className="text-sm font-semibold text-slate-900 leading-tight">Vertex ERP</p>
+          <p className="text-sm font-semibold text-slate-900 leading-tight">Flowdesk</p>
           <p className="text-xs text-slate-400 leading-tight">CRM Suite</p>
         </div>
       </div>
