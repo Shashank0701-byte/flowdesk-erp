@@ -91,6 +91,16 @@ export async function getCustomer(req: Request, res: Response): Promise<void> {
         orderBy: { createdAt: 'desc' },
         include: { user: { select: { id: true, name: true, role: true } } },
       },
+      challans: {
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          challanNumber: true,
+          status: true,
+          totalQuantity: true,
+          createdAt: true,
+        },
+      },
       _count: { select: { challans: true } },
     },
   });
