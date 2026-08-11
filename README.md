@@ -2,13 +2,13 @@
 
 A full-stack ERP/CRM system with Sales Challan management, inventory tracking, and customer relationship management.
 
-## Live Links _(deployment — tomorrow)_
+## Live Links
 
-| Service    | URL                          |
-|------------|------------------------------|
-| Frontend   | _Vercel — TBD_               |
-| Backend    | _Render — TBD_               |
-| Database   | Neon PostgreSQL (provisioned)|
+| Service    | URL                                          |
+|------------|----------------------------------------------|
+| Frontend   | https://flowdesk-erp.vercel.app              |
+| Backend    | https://flowdesk-erp.onrender.com            |
+| Database   | Neon PostgreSQL (ap-southeast-1)             |
 
 ---
 
@@ -181,7 +181,12 @@ ERP_CRM/
 
 ## API Reference
 
-Base URL: `http://localhost:3000`
+| Environment | Base URL |
+|---|---|
+| Production | `https://flowdesk-erp.onrender.com` |
+| Local dev  | `http://localhost:3000` |
+
+> **Postman collection**: `docs/postman_collection.json` — import into Postman, run **Login (Admin)** first and the JWT is auto-saved to `{{token}}` for all subsequent requests.
 
 All protected routes require: `Authorization: Bearer <token>`
 

@@ -1,12 +1,12 @@
 {
   "info": {
     "name": "ERP CRM API",
-    "description": "Mini ERP + CRM — Auth, Customers, Products, Stock, Challans",
+    "description": "Mini ERP + CRM — Auth, Customers, Products, Stock, Challans\n\nTwo environments available via the `baseUrl` variable:\n- Local:      http://localhost:3000\n- Production: https://flowdesk-erp.onrender.com\n\nRun \"Login (Admin)\" first — the test script auto-saves the JWT to `{{token}}`.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
-    { "key": "baseUrl", "value": "http://localhost:3000", "type": "string" },
-    { "key": "token", "value": "", "type": "string" }
+    { "key": "baseUrl", "value": "https://flowdesk-erp.onrender.com", "type": "string", "description": "Switch to http://localhost:3000 for local dev" },
+    { "key": "token",   "value": "", "type": "string", "description": "Auto-populated by Login requests" }
   ],
   "item": [
     {
@@ -20,7 +20,8 @@
               "script": {
                 "exec": [
                   "const res = pm.response.json();",
-                  "if (res.token) pm.collectionVariables.set('token', res.token);"
+                  "if (res.token) pm.collectionVariables.set('token', res.token);",
+                  "pm.test('Login returns token', () => pm.expect(res.token).to.be.a('string'));"
                 ]
               }
             }
@@ -87,7 +88,10 @@
           "request": {
             "method": "POST",
             "url": "{{baseUrl}}/api/auth/register",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"New User\",\n  \"email\": \"newuser@erp.com\",\n  \"password\": \"password123\",\n  \"role\": \"Sales\"\n}"
@@ -95,11 +99,10 @@
           }
         },
         {
-          "name": "Get Current User (me)",
+          "name": "Health Check",
           "request": {
             "method": "GET",
-            "url": "{{baseUrl}}/api/auth/me",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+            "url": "{{baseUrl}}/health"
           }
         }
       ]
@@ -118,9 +121,9 @@
               "query": [
                 { "key": "page", "value": "1" },
                 { "key": "limit", "value": "20" },
-                { "key": "q", "value": "", "disabled": true },
-                { "key": "status", "value": "Active", "disabled": true },
-                { "key": "type", "value": "Wholesale", "disabled": true }
+                { "key": "q", "value": "", "disabled": true, "description": "Search by name, mobile, email, business name" },
+                { "key": "status", "value": "Active", "disabled": true, "description": "Lead | Active | Inactive" },
+                { "key": "type", "value": "Wholesale", "disabled": true, "description": "Retail | Wholesale | Distributor" }
               ]
             },
             "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
@@ -146,7 +149,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Rajesh Kumar\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rajesh@example.com\",\n  \"businessName\": \"Kumar Enterprises\",\n  \"gstNumber\": \"29ABCDE1234F1Z5\",\n  \"type\": \"Wholesale\",\n  \"status\": \"Active\",\n  \"address\": \"45 Industrial Area, Delhi\"\n}"
+              "raw": "{\n  \"name\": \"Rajesh Kumar\",\n  \"mobile\": \"9876543210\",\n  \"email\": \"rajesh@example.com\",\n  \"businessName\": \"Kumar Enterprises\",\n  \"gstNumber\": \"29ABCDE1234F1Z5\",\n  \"type\": \"Wholesale\",\n  \"status\": \"Lead\",\n  \"address\": \"45 Industrial Area, Delhi\"\n}"
             }
           }
         },
@@ -216,9 +219,9 @@
               "query": [
                 { "key": "page", "value": "1" },
                 { "key": "limit", "value": "20" },
-                { "key": "q", "value": "", "disabled": true },
+                { "key": "q", "value": "", "disabled": true, "description": "Search by name, SKU, category" },
                 { "key": "category", "value": "", "disabled": true },
-                { "key": "lowStock", "value": "true", "disabled": true }
+                { "key": "lowStock", "value": "true", "disabled": true, "description": "Filter products below minStockAlert" }
               ]
             },
             "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
@@ -338,9 +341,9 @@
               "query": [
                 { "key": "page", "value": "1" },
                 { "key": "limit", "value": "20" },
-                { "key": "status", "value": "Draft", "disabled": true },
+                { "key": "status", "value": "Draft", "disabled": true, "description": "Draft | Confirmed | Cancelled" },
                 { "key": "customerId", "value": "", "disabled": true },
-                { "key": "q", "value": "CH-2026", "disabled": true }
+                { "key": "q", "value": "CH-", "disabled": true, "description": "Search by challan number" }
               ]
             },
             "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
@@ -388,8 +391,9 @@
         },
         {
           "name": "Confirm Challan",
+          "description": "Transitions Draft → Confirmed. Runs a DB transaction: re-checks stock, decrements it, writes StockMovement (OUT) for each item. Returns 409 if any item has insufficient stock.",
           "request": {
-            "method": "POST",
+            "method": "PATCH",
             "url": "{{baseUrl}}/api/challans/:id/confirm",
             "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
             "variable": [{ "key": "id", "value": "<challan_id>" }]
@@ -397,8 +401,9 @@
         },
         {
           "name": "Cancel Challan",
+          "description": "Transitions Draft or Confirmed → Cancelled. Does NOT reverse stock deductions on a previously Confirmed challan.",
           "request": {
-            "method": "POST",
+            "method": "PATCH",
             "url": "{{baseUrl}}/api/challans/:id/cancel",
             "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
             "variable": [{ "key": "id", "value": "<challan_id>" }]
